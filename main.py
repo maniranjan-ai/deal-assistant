@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_option_menu import option_menu
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.runnables import RunnablePassthrough
@@ -6,6 +7,7 @@ from langchain_core.output_parsers import StrOutputParser
 from utils.rfp_helper import *
 import fitz  # PyMuPDF
 import time
+from streamlit_feedback import streamlit_feedback
 
 
 # Function to extract text from a PDF file
@@ -170,120 +172,47 @@ def load_rfp_selector():
         st.button("Continue", on_click=continue_action(uploaded_file))
 
 
-def load_chatbot(filename=None):
+def load_chatbot():
 
-    def display_text_in_chunks(text, delay=0.02):
-        chat_output = st.empty()
-        for i in range(1, len(text) + 1):
-            current_text = text[:i]
-            chat_output.markdown(f"**Bot:** {current_text}")
-            time.sleep(delay)
+    with st.sidebar:
+        openai_api_key = the_key
 
-    st.markdown(
-        """
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+    st.title("💬 Chatbot")
+    st.caption("🚀 A Streamlit chatbot powered by OpenAI")
 
-        .main {
-            background-color: #e6eef1;
-            font-family: 'Roboto', sans-serif;
-        }
-        .stTextInput > div > div > input {
-            border: 2px solid #4a4a4a;
-            border-radius: 8px;
-            padding: 10px;
-        }
-        .stTextInput > div > div > input:focus {
-            border-color: #0073e6;
-            box-shadow: 0 0 10px rgba(0, 115, 230, 0.5);
-        }
-        .stButton > button {
-            background-color: #0073e6;
-            color: white;
-            border: 2px solid #0073e6;
-            border-radius: 8px;
-            padding: 8px 16px;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-        .stButton > button:hover {
-            background-color: #005bb5;
-            border-color: #005bb5;
-        }
-        .stFileUploader > label > div {
-            color: #0073e6;
-        }
-        .css-1ekf1nj {
-            background-color: white;
-            border-radius: 8px;
-            padding: 16px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .chat-message {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 10px 15px;
-            margin: 10px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .chat-message.user {
-            background-color: #0073e6;
-            color: white;
-            align-self: flex-end;
-        }
-        .chat-message.bot {
-            background-color: #f0f2f6;
-            color: black;
-            align-self: flex-start;
-        }
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-        }
-        .logo-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .logo {
-            height: 50px;
-            margin-right: 15px;
-        }
-        .file-dropdown {
-            margin-top: 10px;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
 
-    st.markdown(
-        """
-        <div>
-            <h2>Deal Assistant Chatbot</h2>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    if 'current_file' not in st.session_state or st.session_state.current_file == '':
-        st.error("No file selected.")
-        # st.button("Navigate to file browser", on_click=navigate_action)
-        return 
-    elif 'current_file' in st.session_state:
-        filename = st.session_state.current_file
-        print("file name is", filename)
-        knowledgeBase = load_knowledge_base(filename=filename)
-        llm = load_llm()
-        prompt = load_prompt()
+    if 'current_file' in st.session_state:
+        st.chat_message("assistant").write("Context is set with " + st.session_state.current_file)
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
-        # Create a form for user input
-        with st.form(key='user_input_form', clear_on_submit=True):
-            user_input = st.text_input("You:", key="input_text")
-            submit_button = st.form_submit_button(label="Send")
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
 
-        if submit_button:
-            if user_input:
-                similar_embeddings = knowledgeBase.similarity_search(user_input)
+    with st.spinner('Scanning document.Please wait...'):
+        if prompt := st.chat_input():
+            input_message = prompt
+            if not openai_api_key:
+                st.info("Please add your OpenAI API key to continue.")
+                st.stop()
+
+            if 'current_file' not in st.session_state or st.session_state.current_file == '':
+                st.error("No file selected.")
+                # st.button("Navigate to file browser", on_click=navigate_action)
+                return
+            elif 'current_file' in st.session_state:
+                filename = st.session_state.current_file
+                print("file name is", filename)
+                knowledgeBase = load_knowledge_base(filename=filename)
+                llm = load_llm()
+                prompt = load_prompt()
+
+                # Create a form for user input
+                st.session_state.messages.append({"role": "user", "content": input_message})
+
+                similar_embeddings = knowledgeBase.similarity_search(input_message)
                 similar_embeddings = FAISS.from_documents(documents=similar_embeddings,
                                                           embedding=OpenAIEmbeddings(
                                                               api_key=the_key))
@@ -298,25 +227,33 @@ def load_chatbot(filename=None):
                         | StrOutputParser()
                 )
 
-                response = rag_chain.invoke(user_input)
-                st.session_state.conversation.append(("You", user_input))
-                st.session_state.conversation.append(("Bot", ""))
-                # Display streaming response
-                display_text_in_chunks(response)
+                response = rag_chain.invoke(input_message)
+            st.chat_message("user").write(input_message)
+            st.session_state.messages.append({"role": "assistant", "content": response})
 
-                # Update conversation with the complete response
-                st.session_state.conversation[-1] = ("Bot", response)
+            def stream_data():
+                for word in response.split(" "):
+                    yield word + " "
+                    time.sleep(0.2)
 
-    # Display conversation
-        if st.session_state.conversation:
-            st.markdown("<div class='chat-container'>", unsafe_allow_html=True)
-            for speaker, text in reversed(st.session_state.conversation):
-                css_class = "user" if speaker == "You" else "bot"
-                st.markdown(
-                    f"<div class='chat-message {css_class}'><strong>{speaker}:</strong> {text}</div>",
-                    unsafe_allow_html=True
-                )
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.chat_message("assistant").write_stream(stream_data)
+            message_id = len(st.session_state.chat_history)
+
+            st.session_state.chat_history.append({
+                "question": input_message,
+                "answer": response,
+                "message_id": message_id,
+            })
+
+            def fbcb():
+                message_id = len(st.session_state.chat_history) - 1
+                if message_id >= 0:
+                    st.session_state.chat_history[message_id]["feedback"] = st.session_state.fb_k
+                print(st.session_state.chat_history)
+
+            with st.form('form'):
+                streamlit_feedback(feedback_type="thumbs", align="flex-start", key='fb_k')
+                st.form_submit_button('Save feedback', on_click=fbcb)
 
 
 # Define button actions
@@ -343,14 +280,24 @@ def navigate_action():
 
 
 if __name__ == '__main__':
+
     st.title("Deal Assistant")
 
     if 'navigation' not in st.session_state:
         st.session_state.navigation = "File Browser"
 
-    st.sidebar.title("Menu")
+    # st.sidebar.title("Menu")
     options = ["File Browser", "Deal Assistant Bot", "About Deal Assistant"]
-    selection = st.sidebar.selectbox("Go to", options, index=options.index(st.session_state.navigation))
+    # selection = st.sidebar.selectbox("Go to", options, index=options.index(st.session_state.navigation))
+
+    with st.sidebar:
+        selection = option_menu(
+            menu_title="Menu",
+            options=options,
+            icons=["file-earmark-check", "chat-dots", "calendar2-heart-fill"],
+            menu_icon=["heart-eyes-fill"],
+            default_index=options.index(st.session_state.navigation),
+        )
 
 
     st.session_state.navigation = selection
