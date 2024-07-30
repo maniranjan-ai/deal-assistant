@@ -32,10 +32,10 @@ def load_rfp_selector():
 
     # Logout button at the top of the main page
     # Logout button at the top of the main page
-    col1, col2, col3 = st.columns([3,5,2])
-    if col3.button('Logout'):
-        logout()
-        st.experimental_rerun()
+    # col1, col2, col3 = st.columns([3,5,2])
+    # if col3.button('Logout'):
+    #     logout()
+    #     st.experimental_rerun()
 
     if 'current_file' not in st.session_state:
         st.session_state.current_file = ''
@@ -266,10 +266,88 @@ def load_chatbot():
     # CSS for the logout button
     # Logout button at the top of the main page
 
-    col1, col2, col3 = st.columns([3,5,2])
-    if col3.button('Logout'):
-        logout()
-        st.experimental_rerun()
+    st.markdown(
+        """
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+        .main {
+            background-color: #e6eef1;
+            font-family: 'Roboto', sans-serif;
+        }
+        .stTextInput > div > div > input {
+            border: 2px solid #4a4a4a;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .stTextInput > div > div > input:focus {
+            border-color: #0073e6;
+            box-shadow: 0 0 10px rgba(0, 115, 230, 0.5);
+        }
+        .stButton > button {
+            background-color: #0073e6;
+            color: white;
+            border: 2px solid #0073e6;
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        .stButton > button:hover {
+            background-color: #005bb5;
+            border-color: #005bb5;
+        }
+        .stFileUploader > label > div {
+            color: #0073e6;
+        }
+        .css-1ekf1nj {
+            background-color: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .chat-message {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .chat-message.user {
+            background-color: #0073e6;
+            color: white;
+            align-self: flex-end;
+        }
+        .chat-message.bot {
+            background-color: #f0f2f6;
+            color: black;
+            align-self: flex-start;
+        }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            height: 50px;
+            margin-right: 15px;
+        }
+        .file-dropdown {
+            margin-top: 10px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # col1, col2, col3 = st.columns([3,5,2])
+    # if col3.button('Logout'):
+    #     logout()
+    #     st.experimental_rerun()
 
     with st.sidebar:
         openai_api_key = the_key
@@ -444,7 +522,7 @@ def logout():
     st.session_state.chat_history = []
 
 
-if __name__ == '__main__':
+def render():
 
     st.title("Deal Assistant")
 
@@ -466,79 +544,79 @@ if __name__ == '__main__':
     initialize_session_state()
 
     # User login/logout interface
-    if not st.session_state.logged_in:
-        st.header("Login")
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        if st.button("Login"):
-            login = login(username, password)
-            if login:
-                st.success("Logged in successfully")
-                st.experimental_rerun()
-    else:
-        if 'navigation' not in st.session_state:
-            st.session_state.navigation = "File Browser"
+    # if not st.session_state.logged_in:
+    #     st.header("Login")
+    #     username = st.text_input("Username")
+    #     password = st.text_input("Password", type="password")
+    #     if st.button("Login"):
+    #         login = login(username, password)
+    #         if login:
+    #             st.success("Logged in successfully")
+    #             st.experimental_rerun()
+    # else:
+    if 'navigation' not in st.session_state:
+        st.session_state.navigation = "File Browser"
 
-        # st.sidebar.title("Menu")
-        options = ["File Browser", "Deal Assistant Bot", "About Deal Assistant"]
-        # selection = st.sidebar.selectbox("Go to", options, index=options.index(st.session_state.navigation))
+    # st.sidebar.title("Menu")
+    options = ["File Browser", "Deal Assistant Bot", "About Deal Assistant"]
+    # selection = st.sidebar.selectbox("Go to", options, index=options.index(st.session_state.navigation))
 
+    with st.sidebar:
+        selection = option_menu(
+            menu_title="Menu",
+            options=options,
+            icons=["file-earmark-check", "chat-dots", "calendar2-heart-fill"],
+            menu_icon=["heart-eyes-fill"],
+            default_index=options.index(st.session_state.navigation),
+        )
+
+    # st.session_state.chat_history = load_chat_history_from_excel()
+
+    if st.session_state.current_file:
         with st.sidebar:
-            selection = option_menu(
-                menu_title="Menu",
-                options=options,
-                icons=["file-earmark-check", "chat-dots", "calendar2-heart-fill"],
-                menu_icon=["heart-eyes-fill"],
-                default_index=options.index(st.session_state.navigation),
-            )
+            st.write(st.session_state.current_file)
 
-        # st.session_state.chat_history = load_chat_history_from_excel()
+    with st.sidebar:
+        st.header("Chat History")
+        time_period = st.selectbox("Select time period", ["all time", "last 7 days", "last 30 days"])
+        filtered_messages = filter_messages(time_period)
+        user_role="👤"
+        bot_role = "🤖"
+        for chat in filtered_messages:
+            st.write(f"{user_role}: {chat['question']}")
+            st.write(f"{bot_role}: {chat['answer']}")
 
-        if st.session_state.current_file:
-            with st.sidebar:
-                st.write(st.session_state.current_file)
+    st.session_state.navigation = selection
 
-        with st.sidebar:
-            st.header("Chat History")
-            time_period = st.selectbox("Select time period", ["all time", "last 7 days", "last 30 days"])
-            filtered_messages = filter_messages(time_period)
-            user_role="👤"
-            bot_role = "🤖"
-            for chat in filtered_messages:
-                st.write(f"{user_role}: {chat['question']}")
-                st.write(f"{bot_role}: {chat['answer']}")
+    if st.session_state.navigation == "File Browser":
+        load_rfp_selector()
 
-        st.session_state.navigation = selection
+    elif st.session_state.navigation == "Deal Assistant Bot":
+        load_chatbot()
 
-        if st.session_state.navigation == "File Browser":
-            load_rfp_selector()
+    elif st.session_state.navigation == "About Deal Assistant":
+        st.header("About")
+        st.write("""
+            **Deal Assistant** is an application designed to assist users in handling and interacting with Request for Proposal (RFP) documents and engaging in chatbot interactions. Below is an overview of its core features and functionality:
 
-        elif st.session_state.navigation == "Deal Assistant Bot":
-            load_chatbot()
+            ### Core Features:
 
-        elif st.session_state.navigation == "About Deal Assistant":
-            st.header("About")
-            st.write("""
-                **Deal Assistant** is an application designed to assist users in handling and interacting with Request for Proposal (RFP) documents and engaging in chatbot interactions. Below is an overview of its core features and functionality:
-    
-                ### Core Features:
-    
-                **1. RFP File Selection:**
-                - **File Upload**: Users can upload PDF files containing RFP documents.
-                - **File Viewing**: Once uploaded, the content of the RFP document is extracted for user review.
-                - **File Management**: Users can select from a list of previously uploaded files to view their content.
-    
-                **2. Chatbot Interaction:**
-                - **User Interaction**: Users can interact with a chatbot by asking questions. The chatbot utilizes the  RFP data to generate responses based on the user input.
-                - **Conversation History**: The chatbot maintains a history of interactions for context and reference.
-    
-                **3. Navigation:**
-                - **Page Navigation**: Users can navigate between the RFP File Selector and the Chatbot interface through a sidebar menu.
-    
-                **4. State Management:**
-                - **Session State**: Uses session state to manage the current file, navigation state, and refresh functionality.
-    
-                ### Usage Context:
-    
-                The "Deal Assistant" application is useful in scenarios where users need to manage and analyze RFP documents, interact with a chatbot for queries related to the content of those documents, and maintain a record of their interactions with the chatbot. It is likely intended for professionals who deal with RFPs and need an efficient tool for document management and interactive assistance.
-                """)
+            **1. RFP File Selection:**
+            - **File Upload**: Users can upload PDF files containing RFP documents.
+            - **File Viewing**: Once uploaded, the content of the RFP document is extracted for user review.
+            - **File Management**: Users can select from a list of previously uploaded files to view their content.
+
+            **2. Chatbot Interaction:**
+            - **User Interaction**: Users can interact with a chatbot by asking questions. The chatbot utilizes the  RFP data to generate responses based on the user input.
+            - **Conversation History**: The chatbot maintains a history of interactions for context and reference.
+
+            **3. Navigation:**
+            - **Page Navigation**: Users can navigate between the RFP File Selector and the Chatbot interface through a sidebar menu.
+
+            **4. State Management:**
+            - **Session State**: Uses session state to manage the current file, navigation state, and refresh functionality.
+
+            ### Usage Context:
+
+            The "Deal Assistant" application is useful in scenarios where users need to manage and analyze RFP documents, interact with a chatbot for queries related to the content of those documents, and maintain a record of their interactions with the chatbot. It is likely intended for professionals who deal with RFPs and need an efficient tool for document management and interactive assistance.
+            """)
