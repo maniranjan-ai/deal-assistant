@@ -14,7 +14,7 @@ def load_knowledge_base(filename):
 # function to load the OPENAI LLM
 def load_llm():
     from langchain_openai import ChatOpenAI
-    llm = ChatOpenAI(model_name="gpt-4o", temperature=0,
+    llm = ChatOpenAI(model_name="gpt-4-turbo", temperature=0,
                      api_key=the_key)
     return llm
 
