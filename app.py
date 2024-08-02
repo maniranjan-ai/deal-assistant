@@ -5,15 +5,39 @@ from login import login
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 
+
+def add_footer():
+    footer_html = """
+    <style>
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: white;
+        color: black;
+        text-align: center;
+        padding: 10px;
+    }
+    </style>
+    <div class="footer">
+        <p>&copy; 2024 Accenture. All rights reserved.</p>
+    </div>
+    """
+    st.markdown(footer_html, unsafe_allow_html=True)
+
+
 def main():
+    logo_url = "C:/Users/s.ck.srivastava/PycharmProjects/deal-assistant/static/ACN.svg"  # Replace with the URL or path to your logo
+    st.image(logo_url, width=50, use_column_width=False)
     if not st.session_state['logged_in']:
         login()
     else:
         if st.sidebar.button("Logout", key='main_page_logout'):
             st.session_state['logged_in'] = False
             st.experimental_rerun()
-        st.sidebar.title("Pages")
-        page = st.sidebar.selectbox("Select a page", ["Home", "RFP Summarizer", "Competition Insights",
+        st.sidebar.title("Select a module")
+        page = st.sidebar.selectbox("", ["Home", "RFP Summarizer", "Competition Insights",
                                                       "Contract Generation", "Pricing Retrieval & Approval",
                                                       "Proposal Drafting", "Review Mechanism", "Solution Recommendation"])
 
@@ -60,6 +84,8 @@ def main():
             # Import and render page2.py
             import my_pages.Solution_Recommendation
             my_pages.Solution_Recommendation.render()
+
+    add_footer()
 
 
 if __name__ == "__main__":
