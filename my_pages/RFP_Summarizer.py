@@ -11,6 +11,7 @@ from streamlit_feedback import streamlit_feedback
 from datetime import datetime, timedelta
 import pandas as pd
 import hashlib
+from app import add_footer
 
 
 
@@ -384,12 +385,20 @@ def load_chatbot():
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
-    suggestions = ["Summarize the RFP", "Important Dates", "RFP guidelines", "Key features"]
+    suggestions = ["Please share a Summary for the RFP", "Please share the submission guidelines for this RFP?", "Please highlight the important dates for this RFP", "Show me the detail budget and funding for this RFP?"]
 
     # Display suggestions as buttons
-    for suggestion in suggestions:
-        if st.button(suggestion):
-            handle_input(suggestion, openai_api_key)
+    rows = len(suggestions) // 2 + (len(suggestions) % 2 > 0)  # Calculate number of rows needed
+    key_counter = 0
+
+    for row in range(rows):
+        cols = st.columns(2)  # Create 2 columns
+        for col in range(2):
+            index = row * 2 + col  # Calculate the correct index for suggestions
+            if index < len(suggestions):  # Check if index is within bounds
+                if cols[col].button(suggestions[index], key=f"button_{index}"):
+                    handle_input(suggestions[index], "your_openai_api_key")
+
 
     with st.spinner('Scanning document.Please wait...'):
         if prompt := st.chat_input():
@@ -412,7 +421,7 @@ def load_chatbot():
                 # Create a form for user input
                 st.session_state.messages.append({"role": "user", "content": input_message})
 
-                similar_embeddings = knowledgeBase.similarity_search(input_message)
+                similar_embeddings = knowledgeBase.similarity_search(input_message, k=10)
                 similar_embeddings = FAISS.from_documents(documents=similar_embeddings,
                                                           embedding=OpenAIEmbeddings(
                                                               api_key=the_key))
@@ -558,14 +567,14 @@ def render():
         st.session_state.navigation = "File Browser"
 
     # st.sidebar.title("Menu")
-    options = ["File Browser", "Deal Assistant Bot", "About Deal Assistant"]
+    options = ["File Browser", "Deal Assistant Bot"]
     # selection = st.sidebar.selectbox("Go to", options, index=options.index(st.session_state.navigation))
 
     with st.sidebar:
         selection = option_menu(
-            menu_title="Menu",
+            menu_title="",
             options=options,
-            icons=["file-earmark-check", "chat-dots", "calendar2-heart-fill"],
+            icons=[],
             menu_icon=["heart-eyes-fill"],
             default_index=options.index(st.session_state.navigation),
         )
@@ -594,29 +603,31 @@ def render():
     elif st.session_state.navigation == "Deal Assistant Bot":
         load_chatbot()
 
-    elif st.session_state.navigation == "About Deal Assistant":
-        st.header("About")
-        st.write("""
-            **Deal Assistant** is an application designed to assist users in handling and interacting with Request for Proposal (RFP) documents and engaging in chatbot interactions. Below is an overview of its core features and functionality:
+    add_footer()
 
-            ### Core Features:
-
-            **1. RFP File Selection:**
-            - **File Upload**: Users can upload PDF files containing RFP documents.
-            - **File Viewing**: Once uploaded, the content of the RFP document is extracted for user review.
-            - **File Management**: Users can select from a list of previously uploaded files to view their content.
-
-            **2. Chatbot Interaction:**
-            - **User Interaction**: Users can interact with a chatbot by asking questions. The chatbot utilizes the  RFP data to generate responses based on the user input.
-            - **Conversation History**: The chatbot maintains a history of interactions for context and reference.
-
-            **3. Navigation:**
-            - **Page Navigation**: Users can navigate between the RFP File Selector and the Chatbot interface through a sidebar menu.
-
-            **4. State Management:**
-            - **Session State**: Uses session state to manage the current file, navigation state, and refresh functionality.
-
-            ### Usage Context:
-
-            The "Deal Assistant" application is useful in scenarios where users need to manage and analyze RFP documents, interact with a chatbot for queries related to the content of those documents, and maintain a record of their interactions with the chatbot. It is likely intended for professionals who deal with RFPs and need an efficient tool for document management and interactive assistance.
-            """)
+    # elif st.session_state.navigation == "About Deal Assistant":
+    #     st.header("About")
+    #     st.write("""
+    #         **Deal Assistant** is an application designed to assist users in handling and interacting with Request for Proposal (RFP) documents and engaging in chatbot interactions. Below is an overview of its core features and functionality:
+    #
+    #         ### Core Features:
+    #
+    #         **1. RFP File Selection:**
+    #         - **File Upload**: Users can upload PDF files containing RFP documents.
+    #         - **File Viewing**: Once uploaded, the content of the RFP document is extracted for user review.
+    #         - **File Management**: Users can select from a list of previously uploaded files to view their content.
+    #
+    #         **2. Chatbot Interaction:**
+    #         - **User Interaction**: Users can interact with a chatbot by asking questions. The chatbot utilizes the  RFP data to generate responses based on the user input.
+    #         - **Conversation History**: The chatbot maintains a history of interactions for context and reference.
+    #
+    #         **3. Navigation:**
+    #         - **Page Navigation**: Users can navigate between the RFP File Selector and the Chatbot interface through a sidebar menu.
+    #
+    #         **4. State Management:**
+    #         - **Session State**: Uses session state to manage the current file, navigation state, and refresh functionality.
+    #
+    #         ### Usage Context:
+    #
+    #         The "Deal Assistant" application is useful in scenarios where users need to manage and analyze RFP documents, interact with a chatbot for queries related to the content of those documents, and maintain a record of their interactions with the chatbot. It is likely intended for professionals who deal with RFPs and need an efficient tool for document management and interactive assistance.
+    #         """)

@@ -1,6 +1,10 @@
 import streamlit as st
 
+
 def login():
+    # logo_url = "C:/Users/s.ck.srivastava/PycharmProjects/deal-assistant/static/ACN.svg"  # Replace with the URL or path to your logo
+    # st.image(logo_url, width=150, use_column_width=False)
+
     st.title("Login")
 
     username = st.text_input("Username")
