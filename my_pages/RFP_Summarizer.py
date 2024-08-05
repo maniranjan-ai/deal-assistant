@@ -28,100 +28,12 @@ def extract_text_from_pdf(file_path):
 def load_rfp_selector():
     # Directory to save uploaded files
     UPLOAD_DIR = 'uploaded_files'
-    STATIC_DIR = 'static'
-    global current_file
-
-    # Logout button at the top of the main page
-    # Logout button at the top of the main page
-    # col1, col2, col3 = st.columns([3,5,2])
-    # if col3.button('Logout'):
-    #     logout()
-    #     st.experimental_rerun()
 
     if 'current_file' not in st.session_state:
         st.session_state.current_file = ''
 
     if not os.path.exists(UPLOAD_DIR):
         os.makedirs(UPLOAD_DIR)
-
-    # Streamlit app
-    st.markdown(
-        """
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
-
-        .main {
-            background-color: #e6eef1;
-            font-family: 'Roboto', sans-serif;
-        }
-        .stTextInput > div > div > input {
-            border: 2px solid #4a4a4a;
-            border-radius: 8px;
-            padding: 10px;
-        }
-        .stTextInput > div > div > input:focus {
-            border-color: #0073e6;
-            box-shadow: 0 0 10px rgba(0, 115, 230, 0.5);
-        }
-        .stButton > button {
-            background-color: #0073e6;
-            color: white;
-            border: 2px solid #0073e6;
-            border-radius: 8px;
-            padding: 8px 16px;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-        .stButton > button:hover {
-            background-color: #005bb5;
-            border-color: #005bb5;
-        }
-        .stFileUploader > label > div {
-            color: #0073e6;
-        }
-        .css-1ekf1nj {
-            background-color: white;
-            border-radius: 8px;
-            padding: 16px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .chat-message {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 10px 15px;
-            margin: 10px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .chat-message.user {
-            background-color: #0073e6;
-            color: white;
-            align-self: flex-end;
-        }
-        .chat-message.bot {
-            background-color: #f0f2f6;
-            color: black;
-            align-self: flex-start;
-        }
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-        }
-        .logo-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .logo {
-            height: 50px;
-            margin-right: 15px;
-        }
-        .file-dropdown {
-            margin-top: 10px;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
 
     st.markdown(
         """
@@ -263,105 +175,12 @@ def handle_input(user_input, openai_api_key):
         with st.form('form'):
             streamlit_feedback(feedback_type="thumbs", align="flex-start", key='fb_k')
             st.form_submit_button('Save feedback', on_click=fbcb)
+
+
 def load_chatbot():
-    # CSS for the logout button
-    # Logout button at the top of the main page
-
-    st.markdown(
-        """
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
-
-        .main {
-            background-color: #e6eef1;
-            font-family: 'Roboto', sans-serif;
-        }
-        .stTextInput > div > div > input {
-            border: 2px solid #4a4a4a;
-            border-radius: 8px;
-            padding: 10px;
-        }
-        .stTextInput > div > div > input:focus {
-            border-color: #0073e6;
-            box-shadow: 0 0 10px rgba(0, 115, 230, 0.5);
-        }
-        .stButton > button {
-            background-color: #0073e6;
-            color: white;
-            border: 2px solid #0073e6;
-            border-radius: 8px;
-            padding: 8px 16px;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-        .stButton > button:hover {
-            background-color: #005bb5;
-            border-color: #005bb5;
-        }
-        .stFileUploader > label > div {
-            color: #0073e6;
-        }
-        .css-1ekf1nj {
-            background-color: white;
-            border-radius: 8px;
-            padding: 16px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .chat-message {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 10px 15px;
-            margin: 10px 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .chat-message.user {
-            background-color: #0073e6;
-            color: white;
-            align-self: flex-end;
-        }
-        .chat-message.bot {
-            background-color: #f0f2f6;
-            color: black;
-            align-self: flex-start;
-        }
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-        }
-        .logo-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .logo {
-            height: 50px;
-            margin-right: 15px;
-        }
-        .file-dropdown {
-            margin-top: 10px;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # col1, col2, col3 = st.columns([3,5,2])
-    # if col3.button('Logout'):
-    #     logout()
-    #     st.experimental_rerun()
 
     with st.sidebar:
         openai_api_key = the_key
-
-        # if st.session_state.current_file:
-        #     st.markdown(
-        #         f"""
-        #             <div style="position: absolute; top: 10px; right: 10px; background-color: lightgray; padding: 5px; border-radius: 5px;">
-        #                {st.session_state.current_file}
-        #             </div>
-        #             """,
-        #         unsafe_allow_html=True
-        #     )
 
 
     st.title("💬 Chatbot")
@@ -369,15 +188,7 @@ def load_chatbot():
 
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
-    #
-    # col1, col2 = st.columns([1, 3])
 
-    # Display chat history in the left column
-
-    # with col2:
-
-    # if 'current_file' in st.session_state:
-    #     st.chat_message("assistant").write("Context is set with " + st.session_state.current_file)
 
     if "messages" not in st.session_state:
         st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
@@ -385,18 +196,30 @@ def load_chatbot():
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
-    suggestions = ["Please share a Summary for the RFP", "Please share the submission guidelines for this RFP?", "Please highlight the important dates for this RFP", "Show me the detail budget and funding for this RFP?"]
+    suggestions = ["Please share a Summary for the RFP", "Please share the submission guidelines for this RFP", "Please highlight the important dates for this RFP", "Show me the detail budget and funding for this RFP"]
 
     # Display suggestions as buttons
     rows = len(suggestions) // 2 + (len(suggestions) % 2 > 0)  # Calculate number of rows needed
     key_counter = 0
+
+    # Adding custom CSS for button size
+    # st.markdown("""
+    #     <style>
+    #     .stButton > button {
+    #         width: 100%;
+    #         height: 50px;  /* Adjust the height as needed */
+    #         font-size: 16px;  /* Adjust the font size as needed */
+    #     }
+    #     </style>
+    # """, unsafe_allow_html=True)
+
 
     for row in range(rows):
         cols = st.columns(2)  # Create 2 columns
         for col in range(2):
             index = row * 2 + col  # Calculate the correct index for suggestions
             if index < len(suggestions):  # Check if index is within bounds
-                if cols[col].button(suggestions[index], key=f"button_{index}"):
+                if cols[col].button(suggestions[index], key=f"button_{index}", use_container_width=True):
                     handle_input(suggestions[index], "your_openai_api_key")
 
 
@@ -470,7 +293,6 @@ def load_chatbot():
 
 # Define button actions
 def continue_action(uploaded_file):
-    global current_file
     DB_FAISS_PATH = 'vectorstore/' + uploaded_file.name
     loader = PyPDFLoader("uploaded_files/" + uploaded_file.name)
     docs = loader.load()
@@ -552,17 +374,6 @@ def render():
 
     initialize_session_state()
 
-    # User login/logout interface
-    # if not st.session_state.logged_in:
-    #     st.header("Login")
-    #     username = st.text_input("Username")
-    #     password = st.text_input("Password", type="password")
-    #     if st.button("Login"):
-    #         login = login(username, password)
-    #         if login:
-    #             st.success("Logged in successfully")
-    #             st.experimental_rerun()
-    # else:
     if 'navigation' not in st.session_state:
         st.session_state.navigation = "File Browser"
 
@@ -604,30 +415,3 @@ def render():
         load_chatbot()
 
     add_footer()
-
-    # elif st.session_state.navigation == "About Deal Assistant":
-    #     st.header("About")
-    #     st.write("""
-    #         **Deal Assistant** is an application designed to assist users in handling and interacting with Request for Proposal (RFP) documents and engaging in chatbot interactions. Below is an overview of its core features and functionality:
-    #
-    #         ### Core Features:
-    #
-    #         **1. RFP File Selection:**
-    #         - **File Upload**: Users can upload PDF files containing RFP documents.
-    #         - **File Viewing**: Once uploaded, the content of the RFP document is extracted for user review.
-    #         - **File Management**: Users can select from a list of previously uploaded files to view their content.
-    #
-    #         **2. Chatbot Interaction:**
-    #         - **User Interaction**: Users can interact with a chatbot by asking questions. The chatbot utilizes the  RFP data to generate responses based on the user input.
-    #         - **Conversation History**: The chatbot maintains a history of interactions for context and reference.
-    #
-    #         **3. Navigation:**
-    #         - **Page Navigation**: Users can navigate between the RFP File Selector and the Chatbot interface through a sidebar menu.
-    #
-    #         **4. State Management:**
-    #         - **Session State**: Uses session state to manage the current file, navigation state, and refresh functionality.
-    #
-    #         ### Usage Context:
-    #
-    #         The "Deal Assistant" application is useful in scenarios where users need to manage and analyze RFP documents, interact with a chatbot for queries related to the content of those documents, and maintain a record of their interactions with the chatbot. It is likely intended for professionals who deal with RFPs and need an efficient tool for document management and interactive assistance.
-    #         """)
