@@ -28,7 +28,7 @@ def add_footer():
 
 
 def main():
-    logo_url = "C:/Users/s.ck.srivastava/PycharmProjects/deal-assistant/static/ACN.svg"  # Replace with the URL or path to your logo
+    logo_url = "static/ACN.svg"  # Replace with the URL or path to your logo
     st.image(logo_url, width=50, use_column_width=False)
     if not st.session_state['logged_in']:
         login()
