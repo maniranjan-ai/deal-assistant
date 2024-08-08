@@ -1,6 +1,36 @@
 import streamlit as st
-import login
+from utils.rfp_helper import *
+from streamlit_cookies_manager import EncryptedCookieManager
 
+
+cookies = EncryptedCookieManager(
+    prefix="da_app",  # You can change the prefix to any string
+    password=da_pass# Replace with your own password
+)
+
+# Load cookies (this is necessary to use cookies)
+if not cookies.ready():
+    st.stop()
+
+def login():
+    logo_url = "static/ACN.svg"  # Replace with the URL or path to your logo
+    st.image(logo_url, width=50, use_column_width=False)
+
+    st.title("Login")
+
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        if username == "admin" and password == "password":
+            st.session_state['logged_in'] = True
+            cookies['logged_in'] = 'true'
+            cookies.save()
+            st.experimental_rerun()
+        else:
+            st.error("Invalid username or password")
+
+    add_footer()
 
 
 def add_footer():
@@ -33,6 +63,8 @@ def main():
     # else:
     if st.sidebar.button("Logout", key='main_page_logout'):
         st.session_state['logged_in'] = False
+        cookies['logged_in'] = 'true'
+        cookies.save()
         st.experimental_rerun()
     st.sidebar.title("Select a module")
     page = st.sidebar.selectbox("", ["Home", "RFP Summarization", "Competition Insights",
@@ -88,10 +120,16 @@ def main():
 
 if __name__ == "__main__":
     # Initialize session state for login
+    print("Now session state is", st.session_state)
+
+    # Initialize session state for login
     if 'logged_in' not in st.session_state:
-        st.session_state['logged_in'] = False
-    if st.session_state['logged_in']:
+        if cookies.get('logged_in') == 'true':
+            st.session_state.logged_in = True
+        else:
+            st.session_state.logged_in = False
+    if st.session_state.logged_in:
         main()
     else:
-        login.login()
+        login()
     # main()
