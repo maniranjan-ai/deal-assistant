@@ -11,7 +11,7 @@ from streamlit_feedback import streamlit_feedback
 from datetime import datetime, timedelta
 import pandas as pd
 import hashlib
-from app import add_footer
+# from app import add_footer
 
 
 
@@ -318,6 +318,8 @@ def continue_action(uploaded_file):
     st.session_state.current_file = uploaded_file.name
     st.session_state.navigation = "Deal Assistant Bot"
 
+def continue_action_saved_file():
+    st.session_state.navigation = "Deal Assistant Bot"
 
 def navigate_action():
     print("navigation called")
@@ -424,5 +426,3 @@ def render():
 
     elif st.session_state.navigation == "Deal Assistant Bot":
         load_chatbot()
-
-    add_footer()
