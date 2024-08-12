@@ -1,0 +1,135 @@
+Request for Proposal (RFP): Consumer Insights Platform 
+Proof of Concept 
+ 
+1. Introduction: 
+Zolo Pte Ltd, a leading technology reseller in Singapore, is seeking proposals for a Proof of 
+Concept (POC) implementation of a Consumer Insights Platform for two major brands, OB 
+and PPM. This initiative aims to revolutionize our approach to customer data analysis and 
+targeted marketing campaigns. 
+ 
+2. Project Description and Scope of Work: 
+Zolo Pte Ltd aims to engage XYZ Pte Ltd for a 14-week POC to leverage XYZ's Consumer 
+Insights Platform. The scope includes: 
+ 
+a) Proof of Concept (POC) Duration and Purpose: 
+   - 14-week POC for OB and PPM brands in Singapore 
+ 
+b) Zolo's Responsibilities: 
+   - Provide details of target groups, including key customer attributes and value matrix to 
+create personas 
+ 
+c) Supplier's Responsibilities: 
+   - Provide access and training to Zolo on the Consumer Insights Platform 
+   - Extract and share customer audience lists based on Zolo's defined personas with QAZ 
+for digital marketing campaigns 
+   - Conduct post-campaign analysis and provide aggregated insights 
+   - Support in the preparation of campaign performance reports 
+ 
+d) Collaboration and Operational Constraints: 
+   - Develop campaign execution plan in collaboration with Zolo, QAZ, and XYZ 
+   - Conduct post-campaign analysis within two weeks per campaign 
+   - Ensure data collection and consent adhere to applicable laws and privacy policies 
+ 
+e) Optional Consulting Services: 
+   - Additional consulting services available at SGD 5,000, subject to agreement 
+ 
+3. Proposal Requirements: 
+Proposals should include: 
+- Detailed project plan and timeline 
+- Team structure and qualifications 
+- Risk mitigation strategies 
+- Data privacy and consent compliance measures 
+- Integration plan with existing systems (e.g., QAZ for digital activation) 
+- Training and knowledge transfer plan 
+- Case studies of similar projects 
+ 
+4. Evaluation Criteria: 
+Proposals will be evaluated based on: 
+- Technical expertise and innovation 
+- Experience in similar projects 
+- Data security measures 
+- Cost-effectiveness 
+- Ability to meet KPIs 
+- Quality of proposed team 
+- Flexibility and scalability of solution 
+ 
+5. Budget and Funding: 
+- Base budget: SGD 20,000 (excluding taxes) 
+- Optional consulting services: Additional SGD 5,000 
+- Payment terms: 60 days from invoice date 
+- Local Transportation Charges and taxes will be added to the applicable invoice unless 
+exempted 
+ 
+6. Timeline: 
+- RFP issuance: 15th July 2024 
+- Q&A period: 15th-20th July 2024 
+- RFP submission deadline: 25th July 2024, 12:00 hours 
+- Proposals evaluation: 30th July 2024 
+- Vendor selection: 1st August 2024 
+- Contract negotiation: 2nd-14th August 2024 
+- POC commencement: 15th August 2024 
+- POC conclusion: 15th October 2024 
+- Final report and presentation: 22nd October 2024 
+ 
+7. Submission Guidelines: 
+- Submit proposals electronically to manav.mehta@abc.com by 12:00 hours on 25th July 
+2024 
+- Proposal format: PDF, maximum 30 pages (excluding appendices) 
+- Font: Arial, 11 pt 
+- Include a cover letter, executive summary, and table of contents 
+ 
+8. Terms and Conditions: 
+- Delivery: Services must be provided within 10 days of purchase order date 
+- Cancellation: Zolo can cancel orders delayed by more than 5 business days 
+- Indemnification: Both parties to indemnify against claims related to death, bodily injury, 
+or property damage 
+- Intellectual Property: Background IP remains with the originating party; Foreground IP 
+jointly owned 
+- Limitation of Liability: Limited to direct damages, not exceeding the purchase price of 
+products/services 
+- Confidentiality: Strict non-disclosure of all shared information 
+- Termination: 30 days' prior written notice required for termination without cause 
+ 
+9. Key Performance Indicators (KPIs): 
+- Building cohorts based on existing attributes and brand brief 
+- Timely delivery of cohorts to QAZ for digital activation 
+- Aggregated insights per campaign 
+- User adoption rate of the Consumer Insights Platform 
+- Improvement in campaign performance metrics 
+ 
+10. Deliverables: 
+- Custom audience data delivered to QAZ for digital marketing campaigns 
+- Aggregated insights per campaign 
+- Size of identified Audience Segments 
+- Training materials and documentation 
+- Weekly progress reports 
+- Final POC report and recommendations 
+ 
+11. Confidentiality: 
+All information shared during the RFP process is confidential and should be treated as 
+such by all parties involved. A Non-Disclosure Agreement must be signed before accessing 
+detailed project information. 
+ 
+12. Contact Information: 
+For inquiries or clarifications, contact: 
+Mr. Manav Mehta 
+Email: manav.mehta@abc.com 
+Phone: +65 XXXX XXXX 
+ 
+13. Appendices: 
+- Detailed technical specifications 
+- Data privacy requirements 
+- Integration requirements with existing systems 
+- Current system architecture 
+- Sample data sets (anonymized) 
+- Zolo's branding guidelines 
+ 
+14. Vendor Qualifications: 
+- Minimum 5 years of experience in consumer insights and data analytics 
+- Proven track record with similar projects in the APAC region 
+- Strong data security certifications (e.g., ISO 27001) 
+- Financial stability (please provide last 3 years of financial statements) 
+ 
+This RFP is issued by Zolo Pte Ltd. We reserve the right to amend or 
+withdraw this RFP at any time. All proposals submitted in response to this 
+RFP become the property of Zolo Pte Ltd. 
