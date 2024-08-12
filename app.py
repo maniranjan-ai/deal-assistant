@@ -5,7 +5,7 @@ from streamlit_cookies_manager import EncryptedCookieManager
 
 cookies = EncryptedCookieManager(
     prefix="da_app",  # You can change the prefix to any string
-    password=da_pass# Replace with your own password
+    password=da_pass
 )
 
 # Load cookies (this is necessary to use cookies)
@@ -26,7 +26,7 @@ def login():
             st.session_state['logged_in'] = True
             cookies['logged_in'] = 'true'
             cookies.save()
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid username or password")
 
@@ -58,12 +58,9 @@ def main():
     logo_url = "static/ACN.svg"  # Replace with the URL or path to your logo
     st.image(logo_url, width=50, use_column_width=False)
 
-    # if not st.session_state['logged_in']:
-    #     login()
-    # else:
     if st.sidebar.button("Logout", key='main_page_logout'):
         st.session_state['logged_in'] = False
-        cookies['logged_in'] = 'true'
+        cookies['logged_in'] = 'false'
         cookies.save()
         st.experimental_rerun()
     st.sidebar.title("Select a module")
