@@ -64,7 +64,7 @@ def main():
         cookies.save()
         st.experimental_rerun()
     st.sidebar.title("Select a module")
-    page = st.sidebar.selectbox("", ["Home", "RFP Summarization", "Competition Insights",
+    page = st.sidebar.selectbox("", ["Home", "RFP Summarization", "Competitive Insights",
                                                   "Contract Generation", "Pricing Retrieval & Approval",
                                                   "Proposal Drafting", "Review Mechanism", "Solution Recommendation"])
 
@@ -75,9 +75,9 @@ def main():
         # Import and render page1.py
         import my_pages.RFP_Summarizer
         my_pages.RFP_Summarizer.render()
-    elif page == "Competition Insights":
-        st.title("Competition Insights")
-        st.write("Welcome to Competition Insights!")
+    elif page == "Competitive Insights":
+        st.title("Competitive Insights")
+        st.write("Welcome to Competitive Insights!")
         # Import and render page2.py
         import my_pages.Competition_Insights
         my_pages.Competition_Insights.render()
