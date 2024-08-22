@@ -123,31 +123,14 @@ def handle_input(user_input, openai_api_key):
         elif 'current_file' in st.session_state:
             filename = st.session_state.current_file
             print("file name is", filename)
-            # knowledgeBase = load_full_knowledge_base(filename)
-            # response = ask_gpt4_full_context(input_message, knowledgeBase)
-            knowledgeBase = load_knowledge_base(filename=filename)
-            llm = load_llm()
-            prompt = load_prompt()
+
+            knowledgeBase = load_knowledge_base(filename)
+            response = get_routed_response(input_message=input_message, knowledgeBase=knowledgeBase,
+                                           filename=filename)
 
             # Create a form for user input
             st.session_state.messages.append({"role": "user", "content": input_message})
-            #
-            similar_embeddings = knowledgeBase.similarity_search(input_message)
-            similar_embeddings = FAISS.from_documents(documents=similar_embeddings,
-                                                      embedding=OpenAIEmbeddings(
-                                                          api_key=the_key))
 
-            # creating the chain for integrating llm,prompt,stroutputparser
-            retriever = similar_embeddings.as_retriever()
-            rag_chain = (
-                    {"context": retriever | format_docs,
-                     "question": RunnablePassthrough()}
-                    | prompt
-                    | llm
-                    | StrOutputParser()
-            )
-            #
-            response = rag_chain.invoke(input_message)
         st.chat_message("user").write(input_message)
         st.session_state.messages.append({"role": "assistant", "content": response})
 
@@ -261,6 +244,87 @@ def load_chatbot():
                 # )
                 #
                 # response = rag_chain.invoke(input_message)
+
+            st.chat_message("user").write(input_message)
+            st.session_state.messages.append({"role": "assistant", "content": response})
+
+            def stream_data():
+                for word in response.split(" "):
+                    yield word + " "
+                    time.sleep(0.2)
+
+            st.chat_message("assistant").write_stream(stream_data)
+            message_id = len(st.session_state.chat_history)
+
+            st.session_state.chat_history.append({
+                "question": input_message,
+                "answer": response,
+                "message_id": message_id,
+                "timestamp": datetime.now()
+            })
+
+            save_chat_history_to_excel(st.session_state.username)
+
+            def fbcb():
+                message_id = len(st.session_state.chat_history) - 1
+                if message_id >= 0:
+                    st.session_state.chat_history[message_id]["feedback"] = st.session_state.fb_k
+                print(st.session_state.chat_history)
+
+            with st.form('form'):
+                streamlit_feedback(feedback_type="thumbs", align="flex-start", key='fb_k')
+                st.form_submit_button('Save feedback', on_click=fbcb)
+
+
+def load_chatbot_routed():
+    with st.sidebar:
+        openai_api_key = the_key
+
+    st.title("💬 Chatbot")
+    st.caption("🚀 A Streamlit chatbot powered by OpenAI")
+
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
+
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
+
+    suggestions = ["Please share a Summary for the RFP", "Please share the submission guidelines for this RFP",
+                   "Please highlight the important dates for this RFP",
+                   "Show me the detail budget and funding for this RFP"]
+
+    # Display suggestions as buttons
+    rows = len(suggestions) // 2 + (len(suggestions) % 2 > 0)  # Calculate number of rows needed
+
+    for row in range(rows):
+        cols = st.columns(2)  # Create 2 columns
+        for col in range(2):
+            index = row * 2 + col  # Calculate the correct index for suggestions
+            if index < len(suggestions):  # Check if index is within bounds
+                if cols[col].button(suggestions[index], key=f"button_{index}", use_container_width=True):
+                    handle_input(suggestions[index], "your_openai_api_key")
+
+    with st.spinner('Scanning document.Please wait...'):
+        if prompt := st.chat_input():
+            input_message = prompt
+            if not openai_api_key:
+                st.info("Please add your OpenAI API key to continue.")
+                st.stop()
+
+            if 'current_file' not in st.session_state or st.session_state.current_file == '':
+                st.error("No file selected.")
+                return
+            elif 'current_file' in st.session_state:
+                filename = st.session_state.current_file
+                print("file name is", filename)
+                knowledgeBase = load_knowledge_base(filename)
+                response = get_routed_response(input_message=input_message, knowledgeBase=knowledgeBase,
+                                               filename=filename)
+
+                st.session_state.messages.append({"role": "user", "content": input_message})
 
             st.chat_message("user").write(input_message)
             st.session_state.messages.append({"role": "assistant", "content": response})
@@ -424,4 +488,4 @@ def render():
         load_rfp_selector()
 
     elif st.session_state.navigation == "Deal Assistant Bot":
-        load_chatbot()
+        load_chatbot_routed()
