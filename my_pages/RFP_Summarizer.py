@@ -94,7 +94,7 @@ def load_rfp_selector():
         st.session_state.uploaded_files.append(uploaded_file.name)
 
         # Display the result based on which button was clicked
-        st.button("Continue", on_click=continue_action(uploaded_file))
+        st.button("Continue", on_click=continue_action_full_context(uploaded_file))
 
 
 # Function to filter messages based on time period
@@ -367,10 +367,11 @@ def continue_action(uploaded_file):
     vectorstore = FAISS.from_documents(documents=splits, embedding=OpenAIEmbeddings(api_key=the_key))
     vectorstore.save_local(DB_FAISS_PATH)
     st.session_state.current_file = uploaded_file.name
-    st.session_state.navigation = "Deal Assistant Bot"
+    # st.session_state.navigation = "Deal Assistant Bot"
 
 
 def continue_action_full_context(uploaded_file):
+    continue_action(uploaded_file)
     global current_file
     text = extract_text_from_pdf("uploaded_files/" + uploaded_file.name)
     output_txt_path = 'txtstore/' + uploaded_file.name.replace(".pdf", "") + ".txt"
