@@ -11,8 +11,9 @@ from streamlit_feedback import streamlit_feedback
 from datetime import datetime, timedelta
 import pandas as pd
 import hashlib
-# from app import add_footer
 
+
+# from app import add_footer
 
 
 # Function to extract text from a PDF file
@@ -109,7 +110,6 @@ def filter_messages(time_period):
 
 # Function to handle user input
 def handle_input(user_input, openai_api_key):
-
     with st.spinner('Scanning document.Please wait...'):
         input_message = user_input
         if not openai_api_key:
@@ -123,31 +123,31 @@ def handle_input(user_input, openai_api_key):
         elif 'current_file' in st.session_state:
             filename = st.session_state.current_file
             print("file name is", filename)
-            knowledgeBase = load_full_knowledge_base(filename)
-            response = ask_gpt4_full_context(input_message, knowledgeBase)
-            # knowledgeBase = load_knowledge_base(filename=filename)
-            # llm = load_llm()
-            # prompt = load_prompt()
-            #
-            # # Create a form for user input
+            # knowledgeBase = load_full_knowledge_base(filename)
+            # response = ask_gpt4_full_context(input_message, knowledgeBase)
+            knowledgeBase = load_knowledge_base(filename=filename)
+            llm = load_llm()
+            prompt = load_prompt()
+
+            # Create a form for user input
             st.session_state.messages.append({"role": "user", "content": input_message})
             #
-            # similar_embeddings = knowledgeBase.similarity_search(input_message)
-            # similar_embeddings = FAISS.from_documents(documents=similar_embeddings,
-            #                                           embedding=OpenAIEmbeddings(
-            #                                               api_key=the_key))
+            similar_embeddings = knowledgeBase.similarity_search(input_message)
+            similar_embeddings = FAISS.from_documents(documents=similar_embeddings,
+                                                      embedding=OpenAIEmbeddings(
+                                                          api_key=the_key))
+
+            # creating the chain for integrating llm,prompt,stroutputparser
+            retriever = similar_embeddings.as_retriever()
+            rag_chain = (
+                    {"context": retriever | format_docs,
+                     "question": RunnablePassthrough()}
+                    | prompt
+                    | llm
+                    | StrOutputParser()
+            )
             #
-            # # creating the chain for integrating llm,prompt,stroutputparser
-            # retriever = similar_embeddings.as_retriever()
-            # rag_chain = (
-            #         {"context": retriever | format_docs,
-            #          "question": RunnablePassthrough()}
-            #         | prompt
-            #         | llm
-            #         | StrOutputParser()
-            # )
-            #
-            # response = rag_chain.invoke(input_message)
+            response = rag_chain.invoke(input_message)
         st.chat_message("user").write(input_message)
         st.session_state.messages.append({"role": "assistant", "content": response})
 
@@ -180,10 +180,8 @@ def handle_input(user_input, openai_api_key):
 
 
 def load_chatbot():
-
     with st.sidebar:
         openai_api_key = the_key
-
 
     st.title("💬 Chatbot")
     st.caption("🚀 A Streamlit chatbot powered by OpenAI")
@@ -191,14 +189,15 @@ def load_chatbot():
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-
     if "messages" not in st.session_state:
         st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
     for msg in st.session_state.messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
-    suggestions = ["Please share a Summary for the RFP", "Please share the submission guidelines for this RFP", "Please highlight the important dates for this RFP", "Show me the detail budget and funding for this RFP"]
+    suggestions = ["Please share a Summary for the RFP", "Please share the submission guidelines for this RFP",
+                   "Please highlight the important dates for this RFP",
+                   "Show me the detail budget and funding for this RFP"]
 
     # Display suggestions as buttons
     rows = len(suggestions) // 2 + (len(suggestions) % 2 > 0)  # Calculate number of rows needed
@@ -215,7 +214,6 @@ def load_chatbot():
     #     </style>
     # """, unsafe_allow_html=True)
 
-
     for row in range(rows):
         cols = st.columns(2)  # Create 2 columns
         for col in range(2):
@@ -223,7 +221,6 @@ def load_chatbot():
             if index < len(suggestions):  # Check if index is within bounds
                 if cols[col].button(suggestions[index], key=f"button_{index}", use_container_width=True):
                     handle_input(suggestions[index], "your_openai_api_key")
-
 
     with st.spinner('Scanning document.Please wait...'):
         if prompt := st.chat_input():
@@ -309,17 +306,19 @@ def continue_action(uploaded_file):
     st.session_state.navigation = "Deal Assistant Bot"
 
 
-def continue_action(uploaded_file):
+def continue_action_full_context(uploaded_file):
     global current_file
     text = extract_text_from_pdf("uploaded_files/" + uploaded_file.name)
-    output_txt_path = 'txtstore/' + uploaded_file.name.replace(".pdf","") +".txt"
+    output_txt_path = 'txtstore/' + uploaded_file.name.replace(".pdf", "") + ".txt"
     with open(output_txt_path, "w", encoding="utf-8") as text_file:
         text_file.write(text)
     st.session_state.current_file = uploaded_file.name
     st.session_state.navigation = "Deal Assistant Bot"
 
+
 def continue_action_saved_file():
     st.session_state.navigation = "Deal Assistant Bot"
+
 
 def navigate_action():
     print("navigation called")
@@ -340,10 +339,12 @@ def load_chat_history_from_excel(username):
     except FileNotFoundError:
         return []
 
+
 users_db = {
     "user1": {"password": hashlib.sha256("password1".encode()).hexdigest()},
     "user2": {"password": hashlib.sha256("password2".encode()).hexdigest()},
 }
+
 
 # Function to hash passwords
 def hash_password(password):
@@ -360,6 +361,7 @@ def login(username, password):
         st.error("Invalid username or password")
         return False
 
+
 def logout():
     st.session_state.logged_in = False
     st.session_state.username = ""
@@ -367,9 +369,7 @@ def logout():
 
 
 def render():
-
     st.title("Deal Assistant")
-
 
     def initialize_session_state():
         if "chat_history" not in st.session_state:
@@ -383,7 +383,6 @@ def render():
 
         if "current_file" not in st.session_state:
             st.session_state.current_file = ""
-
 
     initialize_session_state()
 
@@ -413,7 +412,7 @@ def render():
         st.header("Chat History")
         time_period = st.selectbox("Select time period", ["all time", "last 7 days", "last 30 days"])
         filtered_messages = filter_messages(time_period)
-        user_role="👤"
+        user_role = "👤"
         bot_role = "🤖"
         for chat in filtered_messages:
             st.write(f"{user_role}: {chat['question']}")
