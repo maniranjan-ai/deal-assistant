@@ -211,31 +211,35 @@ def handle_input(user_input, openai_api_key):
         elif 'current_file' in st.session_state:
             filename = st.session_state.current_file
             print("file name is", filename)
-            # knowledgeBase = load_knowledge_base(filename=filename)
-            knowledgeBase = load_full_knowledge_base(filename)
-            response = ask_gpt4_full_context(input_message, knowledgeBase)
-            # llm = load_llm()
-            # prompt = load_prompt()
-            #
-            # # Create a form for user input
-            # st.session_state.messages.append({"role": "user", "content": input_message})
-            #
-            # similar_embeddings = knowledgeBase.similarity_search(input_message)
-            # similar_embeddings = FAISS.from_documents(documents=similar_embeddings,
-            #                                           embedding=OpenAIEmbeddings(
-            #                                               api_key=the_key))
-            #
-            # # creating the chain for integrating llm,prompt,stroutputparser
-            # retriever = similar_embeddings.as_retriever()
-            # rag_chain = (
-            #         {"context": retriever | format_docs,
-            #          "question": RunnablePassthrough()}
-            #         | prompt
-            #         | llm
-            #         | StrOutputParser()
-            # )
-            #
-            # response = rag_chain.invoke(input_message)
+            try:
+                knowledgeBase = load_full_knowledge_base(filename)
+                response = ask_gpt4_full_context(input_message, knowledgeBase)
+                print("Used full context for response")
+            except:
+                print("Using RAG for response")
+                knowledgeBase = load_knowledge_base(filename=filename)
+                llm = load_llm()
+                prompt = load_prompt()
+
+                # Create a form for user input
+                st.session_state.messages.append({"role": "user", "content": input_message})
+
+                similar_embeddings = knowledgeBase.similarity_search(input_message)
+                similar_embeddings = FAISS.from_documents(documents=similar_embeddings,
+                                                          embedding=OpenAIEmbeddings(
+                                                              api_key=the_key))
+
+                # creating the chain for integrating llm,prompt,stroutputparser
+                retriever = similar_embeddings.as_retriever()
+                rag_chain = (
+                        {"context": retriever | format_docs,
+                         "question": RunnablePassthrough()}
+                        | prompt
+                        | llm
+                        | StrOutputParser()
+                )
+
+                response = rag_chain.invoke(input_message)
         st.chat_message("user").write(input_message)
         st.session_state.messages.append({"role": "assistant", "content": response})
 
@@ -416,31 +420,35 @@ def load_chatbot():
             elif 'current_file' in st.session_state:
                 filename = st.session_state.current_file
                 print("file name is", filename)
-                knowledgeBase = load_full_knowledge_base(filename)
-                response = ask_gpt4_full_context(input_message,knowledgeBase)
-                # knowledgeBase = load_knowledge_base(filename=filename)
-                # llm = load_llm()
-                # prompt = load_prompt()
-                #
-                # # Create a form for user input
-                # st.session_state.messages.append({"role": "user", "content": input_message})
-                #
-                # similar_embeddings = knowledgeBase.similarity_search(input_message, k=10)
-                # similar_embeddings = FAISS.from_documents(documents=similar_embeddings,
-                #                                           embedding=OpenAIEmbeddings(
-                #                                               api_key=the_key))
-                #
-                # # creating the chain for integrating llm,prompt,stroutputparser
-                # retriever = similar_embeddings.as_retriever()
-                # rag_chain = (
-                #         {"context": retriever | format_docs,
-                #          "question": RunnablePassthrough()}
-                #         | prompt
-                #         | llm
-                #         | StrOutputParser()
-                # )
-                #
-                # response = rag_chain.invoke(input_message)
+                try:
+                    knowledgeBase = load_full_knowledge_base(filename)
+                    response = ask_gpt4_full_context(input_message,knowledgeBase)
+                    print("Used full context for response")
+                except:
+                    print("Using RAG for response")
+                    knowledgeBase = load_knowledge_base(filename=filename)
+                    llm = load_llm()
+                    prompt = load_prompt()
+
+                    # Create a form for user input
+                    st.session_state.messages.append({"role": "user", "content": input_message})
+
+                    similar_embeddings = knowledgeBase.similarity_search(input_message, k=10)
+                    similar_embeddings = FAISS.from_documents(documents=similar_embeddings,
+                                                              embedding=OpenAIEmbeddings(
+                                                                  api_key=the_key))
+
+                    # creating the chain for integrating llm,prompt,stroutputparser
+                    retriever = similar_embeddings.as_retriever()
+                    rag_chain = (
+                            {"context": retriever | format_docs,
+                             "question": RunnablePassthrough()}
+                            | prompt
+                            | llm
+                            | StrOutputParser()
+                    )
+
+                    response = rag_chain.invoke(input_message)
             st.chat_message("user").write(input_message)
             st.session_state.messages.append({"role": "assistant", "content": response})
 
@@ -491,6 +499,14 @@ def continue_action(uploaded_file):
     output_txt_path = 'txtstore/' + uploaded_file.name.replace(".pdf","") +".txt"
     with open(output_txt_path, "w", encoding="utf-8") as text_file:
         text_file.write(text)
+
+    DB_FAISS_PATH = 'vectorstore/' + uploaded_file.name
+    loader = PyPDFLoader("uploaded_files/" + uploaded_file.name)
+    docs = loader.load()
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    splits = text_splitter.split_documents(docs)
+    vectorstore = FAISS.from_documents(documents=splits, embedding=OpenAIEmbeddings(api_key=the_key))
+    vectorstore.save_local(DB_FAISS_PATH)
     st.session_state.current_file = uploaded_file.name
     st.session_state.navigation = "Deal Assistant Bot"
 
