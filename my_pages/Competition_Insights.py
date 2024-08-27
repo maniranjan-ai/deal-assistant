@@ -91,16 +91,6 @@ def handle_input(user_input, openai_api_key):
             # Parse the LLM response
             response = StrOutputParser().parse(llm_response.content)
 
-            # rag_chain = (
-            #         {"RFP_context": rfp_retriever | format_docs,
-            #          "competitors_context": compt_retriever | format_docs,
-            #          "question": RunnablePassthrough()}
-            #         | create_and_print_prompt
-            #         | llm
-            #         | StrOutputParser()
-            # )
-            #
-            # response = rag_chain.invoke(input_message)
         st.chat_message("user").write(input_message)
         st.session_state.messages.append({"role": "assistant", "content": response})
 

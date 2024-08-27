@@ -24,7 +24,7 @@ def load_knowledge_base(filename):
 # function to load the OPENAI LLM
 def load_llm():
     from langchain_openai import ChatOpenAI
-    llm = ChatOpenAI(model_name="gpt-4o", temperature=0.4,
+    llm = ChatOpenAI(model_name="gpt-4o", temperature=TEMPERATURE,
                      api_key=the_key)
     return llm
 
@@ -84,8 +84,49 @@ def load_prompt_ci(RFP_context, competitors_context, question):
 def load_summarization_prompt(RFP_context, question):
     # Create the prompt template as a string
     prompt_string = f"""
-        You are an intelligent assistant with access to a specific Request for Proposal (RFP) document and detailed competitor information. 
-        Your task is to answer user queries strictly based on the provided context from the RFP and competitor data.
+        You are an intelligent assistant with access to a specific Request for Proposal (RFP) document. 
+        Your task is to answer user queries strictly based on the provided context from the RFP.
+
+        Instructions:
+        1. Carefully read the provided context from the RFP.
+        2. Answer the user query using only the information available in the context.
+        3. If the context does not contain the necessary information to answer the query, respond with: "Not Sure! I may not be the right one to answer that!"
+        4. Your response should be clear, concise, and relevant to the user's question.
+        5. Please summarize the provided context, making sure to include and organize the information under the most 
+        relevant headers from the list provided. If a header doesn't naturally fit into the context, 
+        you may omit it, but prioritize using as many relevant headers as possible. 
+        also include the headers from your side if seems fit.
+
+        Context: 
+        Request for Proposal (RFP) Information: {RFP_context}
+        
+        Headers to include:
+        Executive Summary
+        Project Scope
+        Technical Approach
+        Implementation Timeline
+        Important Dates
+        Cost Summary
+        Team Structure
+        Risk Management
+        Compliance
+        Value Proposition
+        Client References
+
+        User Query: 
+        {question}
+
+        Response:
+        """
+
+    return prompt_string
+
+
+def load_general_prompt(RFP_context, question):
+    # Create the prompt template as a string
+    prompt_string = f"""
+        You are an intelligent assistant with access to a specific Request for Proposal (RFP) document. 
+        Your task is to answer user queries strictly based on the provided context from the RFP.
 
         Instructions:
         1. Carefully read the provided context from the RFP and competitor data.
@@ -108,8 +149,31 @@ def load_summarization_prompt(RFP_context, question):
 def load_chunk_summarization_prompt(RFP_context_chunk):
     # Create the prompt template as a string
     prompt_string = f"""
-            Please summarize the following text in concise manner focusing on main points:
+            "Please summarize the following text. Focus on extracting the key points, 
+            ensuring that the summary is concise and captures the main ideas":
+            
+            Instructions:
+            1. we are summarizing chunks of a long text, summarize in a way that it will used to generate the final summarization.
+            2. Please summarize the provided text, making sure to include and organize the information under the most 
+            relevant headers from the list provided. If a header doesn't naturally fit into the context, 
+            you may omit it, but prioritize using as many relevant headers as possible. 
+            also include the headers from your side if seems fit.
+            
+            Text:
             {RFP_context_chunk}
+            
+            Headers to include:
+            Executive Summary
+            Project Scope
+            Technical Approach
+            Implementation Timeline
+            Important Dates
+            Cost Summary
+            Team Structure
+            Risk Management
+            Compliance
+            Value Proposition
+            Client References
 
             Response:
             """
@@ -280,5 +344,5 @@ def get_routed_response(input_message="", knowledgeBase=None, filename=""):
         return summarization_chain.invoke(load_summarization_prompt(RFP_context=summarization_context,
                                                                     question=input_message))
     else:
-        return rag_chain.invoke(load_summarization_prompt(RFP_context=general_context,
+        return rag_chain.invoke(load_general_prompt(RFP_context=general_context,
                                                                     question=input_message))['result']
