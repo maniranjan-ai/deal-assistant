@@ -1,6 +1,9 @@
 import streamlit as st
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from streamlit_option_menu import option_menu
 from utils.rfp_helper import *
 import fitz  # PyMuPDF
 import time
@@ -132,22 +135,31 @@ def handle_input(user_input, openai_api_key):
             st.form_submit_button('Save feedback', on_click=fbcb)
 
 
-def render():
-    with st.sidebar:
-        openai_api_key = the_key
+def continue_action(uploaded_file):
+    DB_FAISS_PATH = 'vectorstore_ci/' + uploaded_file.name
+    loader = PyPDFLoader("uploaded_files_ci/" + uploaded_file.name)
+    docs = loader.load()
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    splits = text_splitter.split_documents(docs)
+    vectorstore = FAISS.from_documents(documents=splits, embedding=OpenAIEmbeddings(api_key=the_key))
+    vectorstore.save_local(DB_FAISS_PATH)
+    st.session_state.current_file = uploaded_file.name
+    st.session_state.navigation = "Deal Assistant Bot"
 
-    # st.title("💬 Chatbot")
-    # st.caption("🚀 A Streamlit chatbot powered by OpenAI")
 
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
+def continue_action_full_context(uploaded_file):
+    global current_file
+    text = extract_text_from_pdf("uploaded_files_ci/" + uploaded_file.name)
+    output_txt_path = 'txtstore_ci/' + uploaded_file.name.replace(".pdf", "") + ".txt"
+    with open(output_txt_path, "w", encoding="utf-8") as text_file:
+        text_file.write(text)
+    st.session_state.current_file = uploaded_file.name
+    st.session_state.navigation = "ChatBot"
 
-    if "messages" not in st.session_state:
-        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
+def continue_action_saved_file():
+    st.session_state.navigation = "ChatBot"
 
-    for msg in st.session_state.messages:
-        st.chat_message(msg["role"]).write(msg["content"])
-
+def load_chatbot():
     suggestions = [
         "Share the list of the competitive products available with Competitor B, in response to this RFP?",
         "Show me the discount trends for data insights offered by Competitor B in the last year?",
@@ -169,9 +181,6 @@ def render():
     with st.spinner('Scanning document.Please wait...'):
         if prompt := st.chat_input():
             input_message = prompt
-            if not openai_api_key:
-                st.info("Please add your OpenAI API key to continue.")
-                st.stop()
             # st.session_state.current_file = "competitors_sample_data1.pdf"
             if 'current_file' not in st.session_state or st.session_state.current_file == '':
                 st.error("No file selected.")
@@ -181,3 +190,133 @@ def render():
                 filename = st.session_state.current_file
                 print("file name is", filename)
                 handle_input(input_message, "your_openai_api_key")
+
+def load_file_browser():
+    # Directory to save uploaded files
+    UPLOAD_DIR = 'uploaded_files_ci'
+
+    if 'current_file' not in st.session_state:
+        st.session_state.current_file = ''
+
+    if not os.path.exists(UPLOAD_DIR):
+        os.makedirs(UPLOAD_DIR)
+
+    st.markdown(
+        """
+        <div>
+            <h2>File Browser</h2>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if 'conversation' not in st.session_state:
+        st.session_state.conversation = []
+
+    if 'uploaded_files' not in st.session_state:
+        st.session_state.uploaded_files = []
+
+    # Layout: File uploader and dropdown menu side by side with OR
+    col1, col2, col3 = st.columns([2, 0.3, 1.3])
+
+    # File uploader widget
+    with col1:
+        uploaded_file = st.file_uploader("Upload document", type=["pdf"])
+
+    # OR text
+    with col2:
+        st.markdown("<h5 style='text-align: center; margin-top: 60px;'>OR</h5>", unsafe_allow_html=True)
+
+    # Dropdown menu for uploaded files
+    with col3:
+        uploaded_files = os.listdir(UPLOAD_DIR)
+        if uploaded_files:
+            selected_file = st.selectbox(
+                "Select file to view",
+                options=[""] + uploaded_files,
+                key="file_dropdown",
+                index=0,
+            )
+    if selected_file and selected_file != "":
+        file_path = os.path.join(UPLOAD_DIR, selected_file)
+        pdf_text = extract_text_from_pdf(file_path)
+        st.text_area("File Content", pdf_text, height=300, key="dropdown_file")
+        st.session_state.current_file = selected_file
+
+        # Display the result based on which button was clicked
+        st.button("Continue", on_click=continue_action_saved_file)
+
+    # Handle file upload
+    if uploaded_file:
+        file_path = os.path.join(UPLOAD_DIR, uploaded_file.name)
+        with open(file_path, 'wb') as f:
+            f.write(uploaded_file.getbuffer())
+        file_details = {"Filename": uploaded_file.name, "FileType": uploaded_file.type, "FileSize": uploaded_file.size}
+
+        file_path = os.path.join(UPLOAD_DIR, uploaded_file.name)
+        pdf_text = extract_text_from_pdf(file_path)
+        st.text_area("File Content", pdf_text, height=300, key="upload text area")
+        st.session_state.uploaded_files.append(uploaded_file.name)
+
+        # Display the result based on which button was clicked
+        st.button("Continue", on_click=continue_action(uploaded_file))
+
+
+def render():
+    with st.sidebar:
+        openai_api_key = the_key
+
+    # st.title("💬 Chatbot")
+    # st.caption("🚀 A Streamlit chatbot powered by OpenAI")
+
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
+
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
+
+    if 'navigation' not in st.session_state:
+        st.session_state.navigation = "Competitor File Browser"
+
+    if "current_file" not in st.session_state:
+        st.session_state.current_file = ""
+
+
+    options = ["Competitor File Browser", "ChatBot"]
+    # selection = st.sidebar.selectbox("Go to", options, index=options.index(st.session_state.navigation))
+
+    with st.sidebar:
+        selection = option_menu(
+            menu_title="",
+            options=options,
+            icons=[],
+            menu_icon=["heart-eyes-fill"],
+            default_index=options.index(st.session_state.navigation),
+        )
+
+    # st.session_state.chat_history = load_chat_history_from_excel()
+
+    if st.session_state.current_file:
+        with st.sidebar:
+            st.write(st.session_state.current_file)
+
+    with st.sidebar:
+        st.header("Chat History")
+        time_period = st.selectbox("Select time period", ["all time", "last 7 days", "last 30 days"])
+        filtered_messages = filter_messages(time_period)
+        user_role = "👤"
+        bot_role = "🤖"
+        for chat in filtered_messages:
+            st.write(f"{user_role}: {chat['question']}")
+            st.write(f"{bot_role}: {chat['answer']}")
+
+    st.session_state.navigation = selection
+
+    if st.session_state.navigation == "Competitor File Browser":
+        load_file_browser()
+
+    elif st.session_state.navigation == "ChatBot":
+        load_chatbot()
