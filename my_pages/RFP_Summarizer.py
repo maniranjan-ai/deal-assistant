@@ -154,7 +154,7 @@ def handle_input(user_input, openai_api_key):
         def stream_data():
             for word in response.split(" "):
                 yield word + " "
-                time.sleep(0.2)
+                time.sleep(0.1)
 
         st.chat_message("assistant").write_stream(stream_data)
         message_id = len(st.session_state.chat_history)

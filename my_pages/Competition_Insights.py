@@ -268,18 +268,6 @@ def render():
     with st.sidebar:
         openai_api_key = the_key
 
-    # st.title("💬 Chatbot")
-    # st.caption("🚀 A Streamlit chatbot powered by OpenAI")
-
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
-
-    if "messages" not in st.session_state:
-        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
-
-    for msg in st.session_state.messages:
-        st.chat_message(msg["role"]).write(msg["content"])
-
     options_ci = ["Competitor File Browser", "ChatBot"]
 
     if 'navigation' not in st.session_state or st.session_state.navigation not in options_ci:
@@ -287,8 +275,6 @@ def render():
 
     if "current_file_ci" not in st.session_state:
         st.session_state.current_file_ci = ""
-
-    # selection = st.sidebar.selectbox("Go to", options, index=options.index(st.session_state.navigation))
 
     with st.sidebar:
         selection = option_menu(
@@ -298,22 +284,6 @@ def render():
             menu_icon=["heart-eyes-fill"],
             default_index=options_ci.index(st.session_state.navigation),
         )
-
-    # st.session_state.chat_history = load_chat_history_from_excel()
-
-    if st.session_state.current_file_ci:
-        with st.sidebar:
-            st.write(st.session_state.current_file_ci)
-
-    with st.sidebar:
-        st.header("Chat History")
-        time_period = st.selectbox("Select time period", ["all time", "last 7 days", "last 30 days"])
-        filtered_messages = filter_messages(time_period)
-        user_role = "👤"
-        bot_role = "🤖"
-        for chat in filtered_messages:
-            st.write(f"{user_role}: {chat['question']}")
-            st.write(f"{bot_role}: {chat['answer']}")
 
     st.session_state.navigation = selection
 
