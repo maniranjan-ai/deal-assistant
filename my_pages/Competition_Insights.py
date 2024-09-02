@@ -45,7 +45,7 @@ def handle_input(user_input, openai_api_key):
             filename = st.session_state.current_file
             print("file name is", filename)
             print("competitor file name is", filename_ci)
-            #knowledgeBase = load_knowledge_base(filename=filename)
+
             kb1 = load_knowledge_base("vectorstore/"+filename)
             kb2 = load_knowledge_base("vectorstore_ci/"+filename_ci)
             llm = load_llm()
@@ -53,31 +53,9 @@ def handle_input(user_input, openai_api_key):
             # Create a form for user input
             st.session_state.messages.append({"role": "user", "content": input_message})
 
-            # similar_embeddings = knowledgeBase.similarity_search(input_message, k=10)
-            # similar_embeddings = FAISS.from_documents(documents=similar_embeddings,
-            #                                           embedding=OpenAIEmbeddings(
-            #                                               api_key=the_key))
-
             # Perform similarity search on both knowledge bases
             similar_docs_kb1 = kb1.similarity_search(input_message, k=3)
             similar_docs_kb2 = kb2.similarity_search(input_message, k=3)
-
-            # Combine the results from both searches
-            combined_docs = similar_docs_kb1 + similar_docs_kb2
-
-            # Optional: Shuffle or simply take the top N if you cannot determine scores
-            # In this example, we're just selecting the first 10 from the combined list
-            top_combined_results = combined_docs
-            # for doc in top_combined_results:
-            #     print(doc.page_content)
-
-            # creating the chain for integrating llm,prompt,stroutputparser
-            # retriever = similar_embeddings.as_retriever()
-            rfp_retriever = FAISS.from_documents(documents=similar_docs_kb1,
-                                             embedding=OpenAIEmbeddings(api_key=the_key)).as_retriever()
-            compt_retriever = FAISS.from_documents(documents=similar_docs_kb2,
-                                             embedding=OpenAIEmbeddings(api_key=the_key)).as_retriever()
-            # retriever = similar_embeddings.as_retriever()
 
             # Retrieve the context information
             RFP_context = format_docs(similar_docs_kb1)  # Assuming rfp_retriever is a function
@@ -220,6 +198,7 @@ def load_file_browser():
         st.markdown("<h5 style='text-align: center; margin-top: 60px;'>OR</h5>", unsafe_allow_html=True)
 
     # Dropdown menu for uploaded files
+    selected_file = ""
     with col3:
         uploaded_files = os.listdir(UPLOAD_DIR)
         if uploaded_files:
