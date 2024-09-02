@@ -124,7 +124,7 @@ def handle_input(user_input, openai_api_key):
             filename = st.session_state.current_file
             print("file name is", filename)
 
-            knowledgeBase = load_knowledge_base(filename)
+            knowledgeBase = load_knowledge_base("vectorstore/"+filename)
             response = get_routed_response(input_message=input_message, knowledgeBase=knowledgeBase,
                                            filename=filename)
 
@@ -137,7 +137,7 @@ def handle_input(user_input, openai_api_key):
         def stream_data():
             for word in response.split(" "):
                 yield word + " "
-                time.sleep(0.2)
+                time.sleep(0.1)
 
         st.chat_message("assistant").write_stream(stream_data)
         message_id = len(st.session_state.chat_history)
@@ -450,11 +450,13 @@ def render():
 
     initialize_session_state()
 
-    if 'navigation' not in st.session_state:
+    options = ["File Browser", "Deal Assistant Bot"]
+
+    if 'navigation' not in st.session_state or st.session_state.navigation not in options:
         st.session_state.navigation = "File Browser"
 
     # st.sidebar.title("Menu")
-    options = ["File Browser", "Deal Assistant Bot"]
+
     # selection = st.sidebar.selectbox("Go to", options, index=options.index(st.session_state.navigation))
 
     with st.sidebar:
