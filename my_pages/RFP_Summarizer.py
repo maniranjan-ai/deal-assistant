@@ -125,7 +125,7 @@ def handle_input(user_input, openai_api_key):
             print("file name is", filename)
             # knowledgeBase = load_full_knowledge_base(filename)
             # response = ask_gpt4_full_context(input_message, knowledgeBase)
-            knowledgeBase = load_knowledge_base(filename=filename)
+            knowledgeBase = load_knowledge_base("vectorstore/"+filename)
             llm = load_llm()
             prompt = load_prompt()
 
@@ -386,11 +386,13 @@ def render():
 
     initialize_session_state()
 
-    if 'navigation' not in st.session_state:
+    options = ["File Browser", "Deal Assistant Bot"]
+
+    if 'navigation' not in st.session_state or st.session_state.navigation not in options:
         st.session_state.navigation = "File Browser"
 
     # st.sidebar.title("Menu")
-    options = ["File Browser", "Deal Assistant Bot"]
+
     # selection = st.sidebar.selectbox("Go to", options, index=options.index(st.session_state.navigation))
 
     with st.sidebar:

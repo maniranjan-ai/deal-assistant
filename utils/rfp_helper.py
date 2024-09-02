@@ -11,7 +11,7 @@ client = OpenAI(api_key=the_key)
 
 def load_knowledge_base(filename):
     embeddings = OpenAIEmbeddings(api_key=the_key, model='text-embedding-ada-002')
-    DB_FAISS_PATH = 'vectorstore/' + filename
+    DB_FAISS_PATH = filename
     db = FAISS.load_local(DB_FAISS_PATH, embeddings, allow_dangerous_deserialization=True)
     return db
 
@@ -28,7 +28,7 @@ def load_prompt():
     prompt = """
     You are an intelligent assistant with access to a specific Request for Proposal (RFP) document. 
     Your task is to answer user queries strictly based on the provided context from the RFP.
-    
+
     Instructions:
     1. Carefully read the provided context from the RFP and competitor data.
     2. Answer the user query using only the information available in the context.
@@ -37,7 +37,7 @@ def load_prompt():
 
     Context: 
     Request for Proposal (RFP) Information: {context}
-    
+
     User Query:  {question}
 
     Response:
