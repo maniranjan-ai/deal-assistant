@@ -244,7 +244,7 @@ def ask_gpt4_full_context(question, context):
 
 
 def extract_text_from_pdf(pdf_path):
-    doc = fitz.open(pdf_path)
+    doc = fitz.Document(pdf_path)
     text = ""
     for page_num in range(len(doc)):
         page = doc.load_page(page_num)

@@ -18,7 +18,7 @@ import hashlib
 
 # Function to extract text from a PDF file
 def extract_text_from_pdf(file_path):
-    pdf_document = fitz.open(file_path)
+    pdf_document = fitz.Document(file_path)
     text = ""
     for page_num in range(pdf_document.page_count):
         page = pdf_document[page_num]
