@@ -63,6 +63,7 @@ def load_rfp_selector():
         st.markdown("<h5 style='text-align: center; margin-top: 60px;'>OR</h5>", unsafe_allow_html=True)
 
     # Dropdown menu for uploaded files
+    selected_file = ""
     with col3:
         uploaded_files = os.listdir(UPLOAD_DIR)
         if uploaded_files:
