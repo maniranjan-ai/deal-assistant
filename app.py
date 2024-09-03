@@ -2,10 +2,9 @@ import streamlit as st
 from utils.rfp_helper import *
 from streamlit_cookies_manager import EncryptedCookieManager
 
-
 cookies = EncryptedCookieManager(
     prefix="da_app",  # You can change the prefix to any string
-    password=da_pass
+    password="da_pass"
 )
 
 # Load cookies (this is necessary to use cookies)

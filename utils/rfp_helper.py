@@ -10,9 +10,11 @@ from langchain.chains import RetrievalQA
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from config import *
+from scipy.spatial.distance import cosine
+import pandas as pd
 
 client = OpenAI(api_key=the_key)
-
+feedback_file = "feedback_database.csv"
 
 def load_knowledge_base(filename):
     embeddings = OpenAIEmbeddings(api_key=the_key, model='text-embedding-ada-002')
@@ -28,6 +30,21 @@ def load_llm():
                      api_key=the_key)
     return llm
 
+def cosine_similarity(e1,e2):
+    return 1 - cosine(e1, e2)
+
+def get_embedding(text, model="text-embedding-3-small"):
+   text = text.replace("\n", " ")
+   return client.embeddings.create(input = [text], model=model).data[0].embedding
+
+def find_similar_prompt(new_prompt, threshold=0.8):
+    new_prompt_embedding = get_embedding(new_prompt)
+    feedback_database = pd.read_csv(feedback_file)
+    for _, entry in feedback_database.iterrows():
+        similarity = cosine_similarity(new_prompt_embedding, eval(entry['embedding']))
+        if similarity > threshold:
+            return entry
+    return None
 
 def load_prompt():
     prompt = """
@@ -81,26 +98,54 @@ def load_prompt_ci(RFP_context, competitors_context, question):
     return prompt_template
 
 
-def load_summarization_prompt(RFP_context, question):
-    # Create the prompt template as a string
-    prompt_string = f"""
-        You are an intelligent assistant with access to a specific Request for Proposal (RFP) document and detailed competitor information. 
-        Your task is to answer user queries strictly based on the provided context from the RFP and competitor data.
+def load_summarization_prompt(RFP_context, question ):
+    similar_query = find_similar_prompt(question)
+    if similar_query is None:
+        print("without feedback")
+        # Create the prompt template as a string
+        prompt_string = f"""
+            You are an intelligent assistant with access to a specific Request for Proposal (RFP) document and detailed competitor information. 
+            Your task is to answer user queries strictly based on the provided context from the RFP and competitor data.
+    
+            Instructions:
+            1. Carefully read the provided context from the RFP and competitor data.
+            2. Answer the user query using only the information available in the context.
+            3. If the context does not contain the necessary information to answer the query, respond with: "Not Sure! I may not be the right one to answer that!"
+            4. Your response should be clear, concise, and relevant to the user's question.
+    
+            Context: 
+            Request for Proposal (RFP) Information: {RFP_context}
+    
+            User Query: 
+            {question}
+    
+            Response:
+            """
+    else:
+        print("feedback considered")
+        print(similar_query['text'])
+        # Create the prompt template as a string with feedback
+        prompt_string = f"""
+                    You are an intelligent assistant with access to a specific Request for Proposal (RFP) document and detailed competitor information. 
+                    Your task is to answer user queries strictly based on the provided context from the RFP and competitor data.
 
-        Instructions:
-        1. Carefully read the provided context from the RFP and competitor data.
-        2. Answer the user query using only the information available in the context.
-        3. If the context does not contain the necessary information to answer the query, respond with: "Not Sure! I may not be the right one to answer that!"
-        4. Your response should be clear, concise, and relevant to the user's question.
+                    Instructions:
+                    1. Carefully read the provided context from the RFP and competitor data.
+                    2. Answer the user query using only the information available in the context.
+                    3. If the context does not contain the necessary information to answer the query, respond with: "Not Sure! I may not be the right one to answer that!"
+                    4. Your response should be clear, concise, and relevant to the user's question.
+                    
+                    Strictly follow following instruction while responsind:
+                    {similar_query['text']}
 
-        Context: 
-        Request for Proposal (RFP) Information: {RFP_context}
+                    Context: 
+                    Request for Proposal (RFP) Information: {RFP_context}
 
-        User Query: 
-        {question}
+                    User Query: 
+                    {question}
 
-        Response:
-        """
+                    Response:
+                    """
 
     return prompt_string
 

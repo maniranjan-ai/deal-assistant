@@ -11,10 +11,43 @@ from streamlit_feedback import streamlit_feedback
 from datetime import datetime, timedelta
 import pandas as pd
 import hashlib
+import os
+from openai import OpenAI
 
+client = OpenAI(api_key=the_key)
 
 # from app import add_footer
+# File path for storing feedback
+feedback_file = "feedback_database.csv"
 
+# Load feedback database from CSV
+if os.path.exists(feedback_file):
+    feedback_database = pd.read_csv(feedback_file)
+else:
+    feedback_database = pd.DataFrame(columns=['prompt', 'embedding', 'response', 'like_dislike', 'text'])
+
+#-------------------------New functions for feedback -------------------------START
+
+def save_feedback_database():
+    feedback_database.to_csv(feedback_file, index=False)
+
+def store_feedback(prompt, response, feedback_type, feedback_text):
+    feedback = {
+        'like_dislike': 'like' if feedback_type == 'thumbs_up' else 'dislike',
+        'text': feedback_text
+    }
+    prompt_embedding = get_embedding(prompt)
+    feedback_entry = {
+        'prompt': prompt,
+        'embedding': prompt_embedding,
+        'response': response,
+        'like_dislike': feedback['like_dislike'],
+        'text': feedback['text']
+    }
+    global feedback_database
+    feedback_database.loc[len(feedback_database)] = feedback_entry
+    save_feedback_database()
+#-------------------------New functions for feedback ------------------------END
 
 # Function to extract text from a PDF file
 def extract_text_from_pdf(file_path):
@@ -155,10 +188,16 @@ def handle_input(user_input, openai_api_key):
             message_id = len(st.session_state.chat_history) - 1
             if message_id >= 0:
                 st.session_state.chat_history[message_id]["feedback"] = st.session_state.fb_k
-            print(st.session_state.chat_history)
+            if st.session_state.fb_k:
+                store_feedback(input_message, response, st.session_state.fb_k['type'],
+                               st.session_state.fb_k['text'])
+
+            print("history:",st.session_state.chat_history)
 
         with st.form('form'):
-            streamlit_feedback(feedback_type="thumbs", align="flex-start", key='fb_k')
+            feedback = streamlit_feedback(feedback_type="thumbs", key='fb_k',align="flex-start",
+                               optional_text_label="Please provide feedback")
+            print("feedback:",feedback)
             st.form_submit_button('Save feedback', on_click=fbcb)
 
 
@@ -269,10 +308,11 @@ def load_chatbot():
                 message_id = len(st.session_state.chat_history) - 1
                 if message_id >= 0:
                     st.session_state.chat_history[message_id]["feedback"] = st.session_state.fb_k
-                print(st.session_state.chat_history)
+                print("history:", st.session_state.chat_history)
 
             with st.form('form'):
-                streamlit_feedback(feedback_type="thumbs", align="flex-start", key='fb_k')
+                feedback = streamlit_feedback(feedback_type="thumbs",align="flex-start", key='fb_k',optional_text_label="Please provide feedback")
+                print("feedback:",feedback)
                 st.form_submit_button('Save feedback', on_click=fbcb)
 
 
@@ -349,11 +389,19 @@ def load_chatbot_routed():
             def fbcb():
                 message_id = len(st.session_state.chat_history) - 1
                 if message_id >= 0:
-                    st.session_state.chat_history[message_id]["feedback"] = st.session_state.fb_k
-                print(st.session_state.chat_history)
+                    st.session_state.chat_history[message_id][
+                        "feedback"] = st.session_state.fb_k
+                if st.session_state.fb_k:
+                    store_feedback(input_message, response,
+                                   st.session_state.fb_k['type'],
+                                   st.session_state.fb_k['text'])
+
+                print("history:", st.session_state.chat_history)
+
 
             with st.form('form'):
-                streamlit_feedback(feedback_type="thumbs", align="flex-start", key='fb_k')
+                feedback = streamlit_feedback(feedback_type="thumbs", align="flex-start", key='fb_k',optional_text_label="Please provide feedback")
+                print("feedback:", feedback)
                 st.form_submit_button('Save feedback', on_click=fbcb)
 
 
