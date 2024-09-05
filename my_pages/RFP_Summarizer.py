@@ -321,7 +321,7 @@ def load_chatbot_routed():
             elif 'current_file' in st.session_state:
                 filename = st.session_state.current_file
                 print("file name is", filename)
-                knowledgeBase = load_knowledge_base("vectorstore"+filename)
+                knowledgeBase = load_knowledge_base("vectorstore/"+filename)
                 response = get_routed_response(input_message=input_message, knowledgeBase=knowledgeBase,
                                                filename=filename)
 
